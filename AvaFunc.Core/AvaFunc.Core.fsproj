@@ -1,16 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
-
   <ItemGroup>
-    <Compile Include="Library.fs" />
+    <Compile Include="AvaFuncTypes.fs" />
+    <Compile Include="Database.fs" />
+    <Compile Include="QuickNoteHelpers.fs" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="LiteDB" Version="4.1.4" />
     <PackageReference Include="LiteDB.FSharp" Version="2.14.0" />
   </ItemGroup>
-
 </Project>
