@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="Home.fs" />
+        <Compile Include="Shell.fs" />
+        <Compile Include="Program.fs" />
+        <AvaloniaResource Include="**\*.xaml" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Avalonia.Desktop" Version="0.9.0" />
+        <PackageReference Include="JaggerJo.Avalonia.FuncUI" Version="0.2.0" />
+        <PackageReference Include="JaggerJo.Avalonia.FuncUI.DSL" Version="0.2.0" />
+        <PackageReference Include="JaggerJo.Avalonia.FuncUI.Elmish" Version="0.2.0" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <Page Include="Styles.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </Page>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\AvaFunc.Core\AvaFunc.Core.fsproj" />
+    </ItemGroup>
+</Project>

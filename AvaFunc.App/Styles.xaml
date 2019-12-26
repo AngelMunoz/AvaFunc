@@ -1,0 +1,9 @@
+<Styles
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- This is a sample on how to apply styling to certain UI elements -->
+    <Style Selector="Button /template/ ContentPresenter">
+        <Setter Property="CornerRadius" Value="5" />
+    </Style>
+    
+</Styles>
