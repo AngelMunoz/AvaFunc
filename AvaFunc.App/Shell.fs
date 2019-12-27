@@ -1,9 +1,11 @@
 namespace AvaFunc.App
 
+
 module Shell =
     open Elmish
     open Avalonia.Controls
     open Avalonia.FuncUI.DSL
+    open Avalonia.Layout
 
     type AppView =
         | Home
@@ -62,29 +64,43 @@ module Shell =
             { state with QuickNotesState = s }, Cmd.map QuickNotesMsg cmd
 
 
-    let private getMenu state dispatch =
+    let private getMenu showGoBack dispatch =
         Menu.create
-            [ Menu.viewItems
-                [ if state.PageStack.Length > 1 then
+            [ Menu.row 0
+              Menu.horizontalAlignment HorizontalAlignment.Stretch
+              Menu.viewItems
+                  [ if showGoBack then
+                      yield MenuItem.create
+                                [ MenuItem.onClick (fun _ -> dispatch NavigateBack)
+                                  MenuItem.header "Go Back" ]
                     yield MenuItem.create
-                              [ MenuItem.onClick (fun _ -> dispatch NavigateBack)
-                                MenuItem.header "Go Back" ]
-                  yield MenuItem.create
-                            [ MenuItem.onClick (fun _ -> dispatch (NavigateTo Home))
-                              MenuItem.header "Home" ]
-                  yield MenuItem.create
-                            [ MenuItem.onClick (fun _ -> dispatch (NavigateTo About))
-                              MenuItem.header "About" ]
-                  yield MenuItem.create
-                            [ MenuItem.onClick (fun _ -> dispatch (NavigateTo QuickNotes))
-                              MenuItem.header "Quick Notes" ] ] ]
+                              [ MenuItem.onClick (fun _ -> dispatch (NavigateTo Home))
+                                MenuItem.header "Home" ]
+                    yield MenuItem.create
+                              [ MenuItem.onClick (fun _ -> dispatch (NavigateTo About))
+                                MenuItem.header "About" ]
+                    yield MenuItem.create
+                              [ MenuItem.onClick (fun _ -> dispatch (NavigateTo QuickNotes))
+                                MenuItem.header "Quick Notes" ] ] ]
 
+    /// <summary>Creates a Grid that wraps the current page being shown in the main window</summary>
+    /// <param name="state">This is the Shell <see cref="AvaFunc.App.Shell.State">State</see></param>
+    /// <param name="dispatch">The shell dispatch function</param>
+    let private pageContent state dispatch =
+        Grid.create
+            [ Grid.row 1
+              Grid.horizontalAlignment HorizontalAlignment.Stretch
+              Grid.verticalAlignment VerticalAlignment.Stretch
+              Grid.children
+                  [ match state.CurrentView with
+                    | Home -> Home.view state.HomeState (HomeMsg >> dispatch)
+                    | About -> About.view state.AboutState (AboutMsg >> dispatch)
+                    | QuickNotes -> QuickNotes.view state.QuickNotesState (QuickNotesMsg >> dispatch) ] ]
+
+    /// <summary>The main view for this shell</summary>
     let view (state: State) dispatch =
-        StackPanel.create
-            [ StackPanel.spacing 8.0
-              StackPanel.children
-                  [ yield getMenu state dispatch
-                    match state.CurrentView with
-                    | Home -> yield Home.view state.HomeState (HomeMsg >> dispatch)
-                    | About -> yield About.view state.AboutState (AboutMsg >> dispatch)
-                    | QuickNotes -> yield QuickNotes.view state.QuickNotesState (QuickNotesMsg >> dispatch) ] ]
+        Grid.create
+            [ Grid.rowDefinitions (RowDefinitions("Auto,*"))
+              Grid.children
+                  [ yield getMenu (state.PageStack.Length > 1) dispatch
+                    yield pageContent state dispatch ] ]
