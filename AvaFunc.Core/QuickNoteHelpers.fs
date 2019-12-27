@@ -9,7 +9,6 @@ module QuickNoteHelpers =
     let private quicknotes (db: LiteDatabase) =
         let col = db.GetCollection<QuickNote>()
         col.EnsureIndex "Title" |> ignore
-        col.EnsureIndex "Content" |> ignore
         col
 
     let find (page: int option) (limit: int option) (where: (QuickNote -> bool) option) =
