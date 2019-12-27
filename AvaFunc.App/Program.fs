@@ -11,8 +11,10 @@ type MainWindow() as this =
     inherit HostWindow()
     do
         base.Title <- "AvaFunc"
-        base.Width <- 400.0
-        base.Height <- 400.0
+        base.Width <- 800.0
+        base.Height <- 600.0
+        base.MinWidth <- 526.0
+        base.MinHeight <- 526.0
 
         //this.VisualRoot.VisualRoot.Renderer.DrawFps <- true
         //this.VisualRoot.VisualRoot.Renderer.DrawDirtyRects <- true
