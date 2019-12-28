@@ -7,6 +7,7 @@
     <ProjectReference Include="..\AvaFunc.Core\AvaFunc.Core.fsproj" />
   </ItemGroup>
   <ItemGroup>
+    <AvaloniaResource Include="**\*.xaml" />
     <Compile Include="PaginationHelpers.fs" />
     <Compile Include="QuickNotes.fs" />
     <Compile Include="Home.fs" />

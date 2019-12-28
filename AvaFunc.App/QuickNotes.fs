@@ -18,7 +18,8 @@ module QuickNotes =
           Notes: seq<QuickNote>
           CurrentNote: QuickNote
           IsLoading: bool
-          IsShowingDelete: bool * QuickNote }
+          IsShowingDelete: bool * QuickNote
+          IsHoveringOver: bool * QuickNote }
 
     type Msg =
         | LoadQuickNotes
@@ -27,6 +28,8 @@ module QuickNotes =
         | PreviousPage
         | AddNote
         | HideDelete
+        | PointerEnter of QuickNote
+        | PointerLeave
         | ShowDelete of QuickNote
         | DeleteNote of QuickNote
         | UpdateNoteTitle of string
@@ -40,6 +43,8 @@ module QuickNotes =
 
     let update (msg: Msg) (state: State) =
         match msg with
+        | PointerEnter note -> { state with IsHoveringOver = true, note }, Cmd.none
+        | PointerLeave -> { state with IsHoveringOver = false, emptyNote }, Cmd.none
         | ShowDelete note -> { state with IsShowingDelete = true, note }, Cmd.none
         | HideDelete -> { state with IsShowingDelete = false, emptyNote }, Cmd.none
         | DeleteNote note ->
@@ -87,7 +92,7 @@ module QuickNotes =
     let init =
         let pagination =
             { Page = 1
-              Limit = 5
+              Limit = 10
               Count = 0
               Where = None }
 
@@ -96,44 +101,13 @@ module QuickNotes =
           Notes = notes
           CurrentNote = emptyNote
           IsShowingDelete = false, emptyNote
+          IsHoveringOver = false, emptyNote
           IsLoading = false }
-
-    let private quickNoteTemplate (note: QuickNote) dispatch =
-        StackPanel.create
-            [ StackPanel.spacing 12.0
-              StackPanel.margin (12.0, 0.0, 0.0, 8.0)
-              StackPanel.orientation Orientation.Horizontal
-              StackPanel.children
-                  [ StackPanel.create
-                      [ StackPanel.width 162.0
-                        StackPanel.height 82.0
-                        StackPanel.spacing 8.0
-                        StackPanel.children
-                            [ TextBlock.create
-                                [ TextBlock.text note.Title
-                                  TextBlock.textWrapping TextWrapping.Wrap
-                                  TextBlock.maxHeight 224.0 ]
-                              TextBlock.create
-                                  [ TextBlock.text note.Content
-                                    TextBlock.textWrapping TextWrapping.NoWrap
-                                    TextBlock.maxHeight 128.0 ] ] ]
-                    Button.create
-                        [ Button.content "Delete Note"
-                          Button.onClick (fun _ -> dispatch (ShowDelete note)) ] ] ]
-
-    let private quickNotesList notes dispatch =
-        ItemsControl.create
-            [ ItemsControl.horizontalAlignment HorizontalAlignment.Stretch
-              ItemsControl.dock Dock.Right
-              ItemsControl.viewItems
-                  [ for note in notes do
-                      yield quickNoteTemplate note dispatch ] ]
 
     let private quickNoteForm note dispatch =
         StackPanel.create
-            [ StackPanel.dock Dock.Left
-              StackPanel.spacing 8.0
-              StackPanel.width 162.0
+            [ StackPanel.classes [ "quicknoteform" ]
+              StackPanel.dock Dock.Left
               StackPanel.children
                   [ TextBox.create
                       [ TextBox.maxLength 140
@@ -152,12 +126,43 @@ module QuickNotes =
                           Button.isEnabled (note.Title.Length >= 3)
                           Button.content "Save Note" ] ] ]
 
-    let private scrollContent notes dispatch =
-        ScrollViewer.create
-            [ ScrollViewer.dock Dock.Top
-              ScrollViewer.verticalAlignment VerticalAlignment.Stretch
-              ScrollViewer.verticalScrollBarVisibility ScrollBarVisibility.Auto
-              ScrollViewer.content (quickNotesList notes dispatch) ]
+    let private quickNoteTemplate (note: QuickNote) dispatch =
+        DockPanel.create
+            [ DockPanel.classes [ "quicknoteitem" ]
+              DockPanel.horizontalAlignment HorizontalAlignment.Stretch
+              DockPanel.verticalAlignment VerticalAlignment.Stretch
+              DockPanel.children
+                  [ TextBlock.create
+                      [ TextBlock.dock Dock.Top
+                        TextBlock.classes [ "title" ]
+                        TextBlock.text note.Title
+                        TextBlock.textWrapping TextWrapping.Wrap
+                        TextBlock.maxHeight 224.0 ]
+                    TextBlock.create
+                        [ TextBlock.dock Dock.Top
+                          TextBlock.classes [ "subtitle" ]
+                          TextBlock.text note.Content
+                          TextBlock.textWrapping TextWrapping.NoWrap
+                          TextBlock.maxHeight 128.0 ]
+                    Button.create
+                        [ Button.dock Dock.Right
+                          Button.content "Delete Note"
+                          Button.classes [ "deletebtn"; "tobottom" ]
+                          Button.onClick (fun _ -> dispatch (ShowDelete note)) ]
+                    Button.create
+                        [ Button.dock Dock.Right
+                          Button.content "Details"
+                          Button.classes [ "detailbtn"; "tobottom" ] ] ] ]
+
+    let private notesList notes dispatch =
+        UniformGrid.create
+            [ UniformGrid.dock Dock.Top
+              UniformGrid.verticalAlignment VerticalAlignment.Stretch
+              UniformGrid.horizontalAlignment HorizontalAlignment.Stretch
+              UniformGrid.verticalScrollBarVisibility ScrollBarVisibility.Visible
+              UniformGrid.children
+                  [ for note in notes do
+                      yield quickNoteTemplate note dispatch ] ]
 
     let private bottomMenu (pagination: Pagination<QuickNote>) dispatch =
         Menu.create
@@ -191,10 +196,11 @@ module QuickNotes =
         let noteMsg = sprintf "Delete \"%s\"?" getContent
 
         StackPanel.create
-            [ StackPanel.dock Dock.Right
+            [ StackPanel.dock Dock.Top
               StackPanel.verticalAlignment VerticalAlignment.Top
-              StackPanel.horizontalAlignment HorizontalAlignment.Right
+              StackPanel.horizontalAlignment HorizontalAlignment.Center
               StackPanel.spacing 8.0
+              StackPanel.margin 8.0
               StackPanel.children
                   [ TextBlock.create [ TextBlock.text noteMsg ]
                     Button.create
@@ -207,11 +213,10 @@ module QuickNotes =
     let view (state: State) dispatch =
         let isShowing, note = state.IsShowingDelete
         DockPanel.create
-            [ DockPanel.margin 12.0
-              DockPanel.horizontalAlignment HorizontalAlignment.Stretch
+            [ DockPanel.horizontalAlignment HorizontalAlignment.Stretch
               DockPanel.verticalAlignment VerticalAlignment.Stretch
               DockPanel.children
                   [ yield quickNoteForm state.CurrentNote dispatch
-                    yield scrollContent state.Notes dispatch
                     if isShowing then yield notificationContent note dispatch
+                    yield notesList state.Notes dispatch
                     yield bottomMenu state.Pagination dispatch ] ]

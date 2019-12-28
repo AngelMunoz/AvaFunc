@@ -20,8 +20,8 @@ module Shell =
           QuickNotesState: QuickNotes.State }
 
     let init =
-        { PageStack = [ Home ]
-          CurrentView = Home
+        { PageStack = [ QuickNotes ]
+          CurrentView = QuickNotes
           HomeState = Home.init
           AboutState = About.init
           QuickNotesState = QuickNotes.init }

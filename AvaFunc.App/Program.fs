@@ -30,8 +30,7 @@ type App() =
     override this.Initialize() =
         this.Styles.Load "avares://Avalonia.Themes.Default/DefaultTheme.xaml"
         this.Styles.Load "avares://Avalonia.Themes.Default/Accents/BaseDark.xaml"
-    // Uncomment the following line to add "rounded button" style
-    // this.Styles.Load "avares://AvaFunc.App/Styles.xaml"
+        this.Styles.Load "avares://AvaFunc.App/Styles.xaml"
 
     override this.OnFrameworkInitializationCompleted() =
         match this.ApplicationLifetime with

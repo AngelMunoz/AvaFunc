@@ -1,9 +1,61 @@
 <Styles
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <!-- This is a sample on how to apply styling to certain UI elements -->
-    <Style Selector="Button /template/ ContentPresenter">
-        <Setter Property="CornerRadius" Value="5" />
+
+    <Style Selector="Button">
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+    </Style>
+
+    <Style Selector="TextBlock.title">
+        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+
+    <Style Selector="TextBlock.subtitle">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+    </Style>
+
+    <Style Selector="DockPanel.quicknoteitem">
+        <Setter Property="Margin" Value="12"/>
+    </Style>
+
+    <Style Selector="DockPanel.quicknoteitem:pointerover">
+        <Setter Property="Background" Value="#686868"/>
+    </Style>
+
+    <Style Selector="StackPanel.quicknoteform">
+        <Setter Property="Margin" Value="4,12"/>
+        <Setter Property="Spacing" Value="8"/>
+        <Setter Property="Width" Value="162"/>
+    </Style>
+
+    <Style Selector="DockPanel.quicknoteitem TextBlock.text:pointerover">
+        <Setter Property="Background" Value="#686868"/>
+    </Style>
+
+    <Style Selector=".deletebtn /template/ ContentPresenter">
+        <Setter Property="Background" Value="#c0392b"/>
+        <Setter Property="BorderBrush" Value="#e74c3c"/>
+        <Setter Property="Height" Value="28"/>
     </Style>
     
+    <Style Selector=".deletebtn:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#a33225"/>
+    </Style>
+
+    <Style Selector=".detailbtn /template/ ContentPresenter">
+        <Setter Property="Background" Value="#1da1db"/>
+        <Setter Property="BorderBrush" Value="#a4d9f0"/>
+        <Setter Property="Height" Value="28"/>
+    </Style>
+    
+    <Style Selector=".detailbtn:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#116083"/>
+    </Style>
+
+    <Style Selector=".tobottom /template/ ContentPresenter">
+        <Setter Property="VerticalAlignment" Value="Bottom"/>
+    </Style>
 </Styles>
