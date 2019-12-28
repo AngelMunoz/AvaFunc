@@ -1,14 +1,14 @@
 namespace AvaFunc.App
 
-open LiteDB
-open Avalonia.Controls.Primitives
 
 module QuickNotes =
     open System
+    open LiteDB
     open Elmish
     open Avalonia.Controls
     open Avalonia.Media
     open Avalonia.Layout
+    open Avalonia.Controls.Primitives
     open Avalonia.FuncUI.DSL
     open AvaFunc.Core.AvaFuncTypes
     open AvaFunc.Core.QuickNoteHelpers
@@ -28,8 +28,7 @@ module QuickNotes =
         | PreviousPage
         | AddNote
         | HideDelete
-        | PointerEnter of QuickNote
-        | PointerLeave
+        | NavigateToNote of QuickNote
         | ShowDelete of QuickNote
         | DeleteNote of QuickNote
         | UpdateNoteTitle of string
@@ -43,8 +42,8 @@ module QuickNotes =
 
     let update (msg: Msg) (state: State) =
         match msg with
-        | PointerEnter note -> { state with IsHoveringOver = true, note }, Cmd.none
-        | PointerLeave -> { state with IsHoveringOver = false, emptyNote }, Cmd.none
+        (* This is meant to be captured in the parent view hence why we don't take action *)
+        | NavigateToNote note -> state, Cmd.none
         | ShowDelete note -> { state with IsShowingDelete = true, note }, Cmd.none
         | HideDelete -> { state with IsShowingDelete = false, emptyNote }, Cmd.none
         | DeleteNote note ->
@@ -92,7 +91,7 @@ module QuickNotes =
     let init =
         let pagination =
             { Page = 1
-              Limit = 10
+              Limit = 9
               Count = 0
               Where = None }
 
@@ -127,47 +126,54 @@ module QuickNotes =
                           Button.content "Save Note" ] ] ]
 
     let private quickNoteTemplate (note: QuickNote) dispatch =
-        DockPanel.create
-            [ DockPanel.classes [ "quicknoteitem" ]
-              DockPanel.horizontalAlignment HorizontalAlignment.Stretch
-              DockPanel.verticalAlignment VerticalAlignment.Stretch
-              DockPanel.children
+        Grid.create
+            [ Grid.classes [ "quicknoteitem" ]
+              Grid.rowDefinitions (RowDefinitions("25,25,50"))
+              Grid.columnDefinitions (ColumnDefinitions("50,50"))
+              Grid.horizontalAlignment HorizontalAlignment.Stretch
+              Grid.verticalAlignment VerticalAlignment.Stretch
+              Grid.children
                   [ TextBlock.create
-                      [ TextBlock.dock Dock.Top
+                      [ TextBlock.row 0
+                        TextBlock.columnSpan 2
                         TextBlock.classes [ "title" ]
                         TextBlock.text note.Title
-                        TextBlock.textWrapping TextWrapping.Wrap
-                        TextBlock.maxHeight 224.0 ]
+                        TextBlock.textWrapping TextWrapping.Wrap ]
                     TextBlock.create
-                        [ TextBlock.dock Dock.Top
+                        [ TextBlock.row 1
+                          TextBlock.columnSpan 2
                           TextBlock.classes [ "subtitle" ]
                           TextBlock.text note.Content
-                          TextBlock.textWrapping TextWrapping.NoWrap
-                          TextBlock.maxHeight 128.0 ]
+                          TextBlock.textWrapping TextWrapping.NoWrap ]
                     Button.create
-                        [ Button.dock Dock.Right
-                          Button.content "Delete Note"
+                        [ Button.row 2
+                          Button.column 1
+                          Button.content "🗑"
                           Button.classes [ "deletebtn"; "tobottom" ]
                           Button.onClick (fun _ -> dispatch (ShowDelete note)) ]
                     Button.create
-                        [ Button.dock Dock.Right
-                          Button.content "Details"
-                          Button.classes [ "detailbtn"; "tobottom" ] ] ] ]
+                        [ Button.row 2
+                          Button.column 0
+                          Button.content "📃"
+                          Button.classes [ "detailbtn"; "tobottom" ]
+                          Button.onClick (fun _ -> dispatch (NavigateToNote note)) ] ] ]
 
     let private notesList notes dispatch =
-        UniformGrid.create
-            [ UniformGrid.dock Dock.Top
-              UniformGrid.verticalAlignment VerticalAlignment.Stretch
-              UniformGrid.horizontalAlignment HorizontalAlignment.Stretch
-              UniformGrid.verticalScrollBarVisibility ScrollBarVisibility.Visible
-              UniformGrid.children
-                  [ for note in notes do
-                      yield quickNoteTemplate note dispatch ] ]
+        ScrollViewer.create
+            [ ScrollViewer.dock Dock.Top
+              ScrollViewer.verticalScrollBarVisibility ScrollBarVisibility.Auto
+              ScrollViewer.content
+                  (UniformGrid.create
+                      [ UniformGrid.children
+                          [ for note in notes do
+                              yield quickNoteTemplate note dispatch ] ]) ]
 
-    let private bottomMenu (pagination: Pagination<QuickNote>) dispatch =
+
+    let private paginationMenu (pagination: Pagination<QuickNote>) dispatch =
         Menu.create
-            [ Menu.dock Dock.Bottom
-              Menu.verticalAlignment VerticalAlignment.Bottom
+            [ Menu.dock Dock.Top
+              Menu.verticalAlignment VerticalAlignment.Center
+              Menu.horizontalAlignment HorizontalAlignment.Right
               Menu.viewItems
                   [ MenuItem.create
                       [ MenuItem.onClick (fun _ -> dispatch PreviousPage)
@@ -216,7 +222,7 @@ module QuickNotes =
             [ DockPanel.horizontalAlignment HorizontalAlignment.Stretch
               DockPanel.verticalAlignment VerticalAlignment.Stretch
               DockPanel.children
-                  [ yield quickNoteForm state.CurrentNote dispatch
+                  [ yield paginationMenu state.Pagination dispatch
+                    yield quickNoteForm state.CurrentNote dispatch
                     if isShowing then yield notificationContent note dispatch
-                    yield notesList state.Notes dispatch
-                    yield bottomMenu state.Pagination dispatch ] ]
+                    yield notesList state.Notes dispatch ] ]

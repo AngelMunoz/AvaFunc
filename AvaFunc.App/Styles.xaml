@@ -17,11 +17,13 @@
         <Setter Property="FontWeight" Value="Medium"/>
     </Style>
 
-    <Style Selector="DockPanel.quicknoteitem">
-        <Setter Property="Margin" Value="12"/>
+    <Style Selector="Grid.quicknoteitem">
+        <Setter Property="Margin" Value="8"/>
+        <Setter Property="Height" Value="100" />
+        <Setter Property="Width" Value="100" />
     </Style>
 
-    <Style Selector="DockPanel.quicknoteitem:pointerover">
+    <Style Selector="Grid.quicknoteitem:pointerover">
         <Setter Property="Background" Value="#686868"/>
     </Style>
 
@@ -31,7 +33,7 @@
         <Setter Property="Width" Value="162"/>
     </Style>
 
-    <Style Selector="DockPanel.quicknoteitem TextBlock.text:pointerover">
+    <Style Selector="Grid.quicknoteitem TextBlock.text:pointerover">
         <Setter Property="Background" Value="#686868"/>
     </Style>
 
