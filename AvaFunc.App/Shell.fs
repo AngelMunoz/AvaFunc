@@ -1,6 +1,7 @@
 namespace AvaFunc.App
 
 
+
 module Shell =
     open Elmish
     open Avalonia.Controls
@@ -11,27 +12,31 @@ module Shell =
         | Home
         | About
         | QuickNotes
+        | QuickNoteDetail
 
     type State =
         { PageStack: List<AppView>
           CurrentView: AppView
           HomeState: Home.State
           AboutState: About.State
-          QuickNotesState: QuickNotes.State }
+          QuickNotesState: QuickNotes.State
+          QuickNoteDetailState: QuickNoteDetail.State }
 
     let init =
         { PageStack = [ QuickNotes ]
           CurrentView = QuickNotes
           HomeState = Home.init
           AboutState = About.init
-          QuickNotesState = QuickNotes.init }
+          QuickNotesState = QuickNotes.init
+          QuickNoteDetailState = QuickNoteDetail.init }
 
     type Msg =
+        | NavigateBack
         | HomeMsg of Home.Msg
         | AboutMsg of About.Msg
         | QuickNotesMsg of QuickNotes.Msg
+        | QuickNoteDetailMsg of QuickNoteDetail.Msg
         | NavigateTo of AppView
-        | NavigateBack
 
     module private NavHelpers =
         let navigateTo page state =
@@ -59,9 +64,19 @@ module Shell =
         | AboutMsg msg ->
             let s, cmd = About.update msg state.AboutState
             { state with AboutState = s }, Cmd.batch [ cmd; Cmd.none ]
+        | QuickNoteDetailMsg msg ->
+            let s, cmd = QuickNoteDetail.update msg state.QuickNoteDetailState
+            { state with QuickNoteDetailState = s }, Cmd.batch [ cmd; Cmd.none ]
         | QuickNotesMsg quicknotesMsg ->
-            let s, cmd = QuickNotes.update quicknotesMsg state.QuickNotesState
-            { state with QuickNotesState = s }, Cmd.map QuickNotesMsg cmd
+            match quicknotesMsg with
+            | QuickNotes.Msg.NavigateToNote note ->
+                { state with QuickNoteDetailState = { state.QuickNoteDetailState with Note = note } },
+                Cmd.batch
+                    [ Cmd.ofMsg (NavigateTo QuickNoteDetail)
+                      Cmd.none ]
+            | quicknotesMsg ->
+                let s, cmd = QuickNotes.update quicknotesMsg state.QuickNotesState
+                { state with QuickNotesState = s }, Cmd.map QuickNotesMsg cmd
 
 
     let private getMenu showGoBack dispatch =
@@ -95,12 +110,16 @@ module Shell =
                   [ match state.CurrentView with
                     | Home -> Home.view state.HomeState (HomeMsg >> dispatch)
                     | About -> About.view state.AboutState (AboutMsg >> dispatch)
-                    | QuickNotes -> QuickNotes.view state.QuickNotesState (QuickNotesMsg >> dispatch) ] ]
+                    | QuickNotes -> QuickNotes.view state.QuickNotesState (QuickNotesMsg >> dispatch)
+                    | QuickNoteDetail ->
+                        QuickNoteDetail.view state.QuickNoteDetailState (QuickNoteDetailMsg >> dispatch) ] ]
 
     /// <summary>The main view for this shell</summary>
     let view (state: State) dispatch =
         Grid.create
-            [ Grid.rowDefinitions (RowDefinitions("Auto,*"))
+            [ Grid.rowDefinitions (RowDefinitions("Auto,Auto"))
+              Grid.verticalAlignment VerticalAlignment.Stretch
+              Grid.horizontalAlignment HorizontalAlignment.Stretch
               Grid.children
                   [ yield getMenu (state.PageStack.Length > 1) dispatch
                     yield pageContent state dispatch ] ]
