@@ -6,6 +6,7 @@ open Avalonia.Controls.ApplicationLifetimes
 open Avalonia.FuncUI
 open Avalonia.FuncUI.Elmish
 open Avalonia.FuncUI.Components.Hosts
+open Avalonia.Media
 
 type MainWindow() as this =
     inherit HostWindow()
@@ -15,7 +16,9 @@ type MainWindow() as this =
         base.Height <- 600.0
         base.MinWidth <- 526.0
         base.MinHeight <- 526.0
-
+        base.FontFamily <-
+            FontFamily.Parse
+                "Segoe UI, San Francisco, Helvetica Neue, Lucida Grande, Roboto, Oxygen-Sans, Ubuntu, Cantarell, Segoe UI Emoji, Apple Color Emoji"
         //this.VisualRoot.VisualRoot.Renderer.DrawFps <- true
         //this.VisualRoot.VisualRoot.Renderer.DrawDirtyRects <- true
 
