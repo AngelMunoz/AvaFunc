@@ -10,6 +10,7 @@
     <AvaloniaResource Include="**\*.xaml" />
     <Compile Include="PaginationHelpers.fs" />
     <Compile Include="QuickNotes.fs" />
+    <Compile Include="QuickNoteDetail.fs" />
     <Compile Include="Home.fs" />
     <Compile Include="About.fs" />
     <Compile Include="Shell.fs" />
