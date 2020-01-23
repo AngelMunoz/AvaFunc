@@ -1,14 +1,14 @@
 namespace AvaFunc.App
 
-open Avalonia.Media
 
 
 
 module Shell =
     open Elmish
     open Avalonia.Controls
-    open Avalonia.FuncUI.DSL
     open Avalonia.Layout
+    open Avalonia.Media
+    open Avalonia.FuncUI.DSL
 
     type AppView =
         | Home
