@@ -1,11 +1,11 @@
 namespace AvaFunc.Core
 
-open LiteDB
-open AvaFunc.Core.AvaFuncTypes
-open AvaFunc.Core.Database
-
-
+[<RequireQualifiedAccess>]
 module QuickNoteHelpers =
+    open LiteDB
+    open AvaFunc.Core.AvaFuncTypes
+    open AvaFunc.Core.Database
+
     let private quicknotes (db: LiteDatabase) =
         let col = db.GetCollection<QuickNote>()
         col.EnsureIndex "Title" |> ignore

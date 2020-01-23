@@ -5,19 +5,22 @@ module QuickNoteDetail =
     open LiteDB
     open Elmish
     open Avalonia.Controls
-    open Avalonia.Media
     open Avalonia.Layout
     open Avalonia.FuncUI.DSL
+    open AvaFunc.Core
     open AvaFunc.Core.AvaFuncTypes
-    open AvaFunc.Core.QuickNoteHelpers
 
     type State =
-        { Note: QuickNote }
+        { Note: QuickNote
+          IsDeleting: bool }
 
     type Msg =
         | SaveNote
         | DeleteNote
-        | GoBack
+        | UpdateNote of NoteSection
+        | SetIsDeleting of bool
+        | SetNote of ObjectId option
+        | GoBack of string option
 
     let private emptyNote =
         { Id = ObjectId.Empty
@@ -27,12 +30,40 @@ module QuickNoteDetail =
 
     let update (msg: Msg) (state: State) =
         match msg with
-        | SaveNote -> state, Cmd.none
-        | DeleteNote -> state, Cmd.none
-        (* This is meant to be captured in the parent view hence why we don't take action *)
-        | GoBack -> state, Cmd.none
+        | SetIsDeleting isDeleting -> { state with IsDeleting = isDeleting }, Cmd.none
+        | SetNote noteid ->
+            let note =
+                match noteid with
+                | Some noteid -> QuickNoteHelpers.findOne noteid
+                | None -> None
+            match note with
+            | Some note -> { state with Note = note }, Cmd.none
+            | None -> state, Cmd.ofMsg (GoBack(Some("Record Not Found")))
+        | UpdateNote section ->
+            let note =
+                match section with
+                | Title title -> { state.Note with Title = title }
+                | Content content -> { state.Note with Content = content }
+            { state with Note = note }, Cmd.none
 
-    let init = { Note = emptyNote }
+        | SaveNote ->
+            QuickNoteHelpers.update state.Note |> ignore
+            state, Cmd.none
+        | DeleteNote ->
+            let deleted = QuickNoteHelpers.delete state.Note.Id
+            state,
+            Cmd.batch
+                [ Cmd.ofMsg (GoBack None)
+                  Cmd.ofMsg (SetIsDeleting false) ]
+        (* This is meant to be captured in the parent view hence why we don't take action *)
+        | GoBack textMsg ->
+            match textMsg with
+            | Some text -> failwith text
+            | None -> failwith "Capture me in the parent component please"
+
+    let init =
+        { Note = emptyNote
+          IsDeleting = false }
 
     let private quickNoteForm note dispatch =
         StackPanel.create
@@ -41,38 +72,31 @@ module QuickNoteDetail =
               StackPanel.children
                   [ TextBox.create
                       [ TextBox.maxLength 140
-                        TextBox.text note.Title ]
+                        TextBox.text note.Title
+                        TextBox.onTextChanged (fun text -> dispatch (UpdateNote(Title text))) ]
                     TextBox.create
                         [ TextBox.acceptsReturn true
-                          TextBox.text note.Content ]
-                    Button.create
-                        [ Button.isEnabled (note.Title.Length >= 3)
-                          Button.content "Save Note" ] ] ]
+                          TextBox.text note.Content
+                          TextBox.onTextChanged (fun text -> dispatch (UpdateNote(Content text))) ]
+                    StackPanel.create
+                        [ StackPanel.orientation Orientation.Horizontal
+                          StackPanel.spacing 12.0
+                          StackPanel.children
+                              [ Button.create
+                                  [ Button.isEnabled (note.Title.Length >= 3)
+                                    Button.content "Save Note"
+                                    Button.onClick (fun _ -> dispatch SaveNote) ]
+                                Button.create
+                                    [ Button.isEnabled (note.Title.Length >= 3)
+                                      Button.content "Delete Note"
+                                      Button.onClick (fun _ -> dispatch (SetIsDeleting true)) ] ] ] ] ]
 
-    let private notificationContent note dispatch =
-        let getContent =
-            let str = (sprintf "%s - %s" note.Title note.Content)
-
-            let getLength =
-                if str.Length <= 26 then (str.Length - 1) else 25
-
-            sprintf "%s..." (str.Substring(0, getLength))
-
-        let noteMsg = sprintf "Delete \"%s\"?" getContent
-
-        StackPanel.create
-            [ StackPanel.dock Dock.Top
-              StackPanel.verticalAlignment VerticalAlignment.Top
-              StackPanel.horizontalAlignment HorizontalAlignment.Center
-              StackPanel.spacing 8.0
-              StackPanel.margin 8.0
-              StackPanel.children
-                  [ TextBlock.create [ TextBlock.text noteMsg ]
-                    Button.create [ Button.content "Yes, Delete" ]
-                    Button.create [ Button.content "Cancel" ] ] ]
 
     let view (state: State) dispatch =
         DockPanel.create
             [ DockPanel.horizontalAlignment HorizontalAlignment.Stretch
               DockPanel.verticalAlignment VerticalAlignment.Stretch
-              DockPanel.children [ yield quickNoteForm state.Note dispatch ] ]
+              DockPanel.children
+                  [ if state.IsDeleting then
+                      yield SharedViews.notificationContent state.Note dispatch DeleteNote (SetIsDeleting false)
+                    yield quickNoteForm state.Note dispatch ] ]

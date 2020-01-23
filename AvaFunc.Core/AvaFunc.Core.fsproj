@@ -6,6 +6,7 @@
     <Compile Include="AvaFuncTypes.fs" />
     <Compile Include="Database.fs" />
     <Compile Include="QuickNoteHelpers.fs" />
+    <Compile Include="Helpers.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="LiteDB" Version="4.1.4" />

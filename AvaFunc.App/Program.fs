@@ -3,10 +3,11 @@
 open Elmish
 open Avalonia
 open Avalonia.Controls.ApplicationLifetimes
+open Avalonia.Media
+open Avalonia.Input
 open Avalonia.FuncUI
 open Avalonia.FuncUI.Elmish
 open Avalonia.FuncUI.Components.Hosts
-open Avalonia.Media
 
 type MainWindow() as this =
     inherit HostWindow()
@@ -21,10 +22,14 @@ type MainWindow() as this =
                 "Segoe UI, San Francisco, Helvetica Neue, Lucida Grande, Roboto, Oxygen-Sans, Ubuntu, Cantarell, Segoe UI Emoji, Apple Color Emoji"
         //this.VisualRoot.VisualRoot.Renderer.DrawFps <- true
         //this.VisualRoot.VisualRoot.Renderer.DrawDirtyRects <- true
-
-        Program.mkProgram (fun () -> Shell.init, Cmd.none) Shell.update Shell.view
+#if DEBUG
+        this.AttachDevTools(KeyGesture.Parse("Ctrl+Shift+I"))
+#endif
+        Program.mkProgram (fun () -> Shell.init, Cmd.ofMsg Shell.navigateToQuickNotes) Shell.update Shell.view
         |> Program.withHost this
+#if DEBUG
         |> Program.withConsoleTrace
+#endif
         |> Program.run
 
 type App() =

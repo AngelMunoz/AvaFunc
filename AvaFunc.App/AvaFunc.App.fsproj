@@ -9,6 +9,7 @@
   <ItemGroup>
     <AvaloniaResource Include="**\*.xaml" />
     <Compile Include="PaginationHelpers.fs" />
+    <Compile Include="SharedViews.fs" />
     <Compile Include="QuickNotes.fs" />
     <Compile Include="QuickNoteDetail.fs" />
     <Compile Include="Home.fs" />
@@ -17,8 +18,8 @@
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia.Desktop" Version="0.9.0" />
-    <PackageReference Include="JaggerJo.Avalonia.FuncUI" Version="0.2.0" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.9.2" />
+    <PackageReference Include="JaggerJo.Avalonia.FuncUI" Version="0.2.1" />
     <PackageReference Include="JaggerJo.Avalonia.FuncUI.DSL" Version="0.2.0" />
     <PackageReference Include="JaggerJo.Avalonia.FuncUI.Elmish" Version="0.2.0" />
   </ItemGroup>

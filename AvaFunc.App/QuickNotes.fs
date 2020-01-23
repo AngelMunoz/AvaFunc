@@ -10,8 +10,8 @@ module QuickNotes =
     open Avalonia.Layout
     open Avalonia.Controls.Primitives
     open Avalonia.FuncUI.DSL
+    open AvaFunc.Core
     open AvaFunc.Core.AvaFuncTypes
-    open AvaFunc.Core.QuickNoteHelpers
 
     type State =
         { Pagination: Pagination<QuickNote>
@@ -43,11 +43,11 @@ module QuickNotes =
     let update (msg: Msg) (state: State) =
         match msg with
         (* This is meant to be captured in the parent view hence why we don't take action *)
-        | NavigateToNote note -> state, Cmd.none
+        | NavigateToNote note -> failwith "Capture me in the parent component please"
         | ShowDelete note -> { state with IsShowingDelete = true, note }, Cmd.none
         | HideDelete -> { state with IsShowingDelete = false, emptyNote }, Cmd.none
         | DeleteNote note ->
-            delete note.Id |> ignore
+            QuickNoteHelpers.delete note.Id |> ignore
             state,
             Cmd.batch
                 [ Cmd.ofMsg HideDelete
@@ -69,7 +69,8 @@ module QuickNotes =
                 Cmd.ofMsg FetchNotes
             | true -> state, Cmd.none
         | FetchNotes ->
-            let notes, count = find (Some state.Pagination.Page) (Some state.Pagination.Limit) state.Pagination.Where
+            let notes, count =
+                QuickNoteHelpers.find (Some state.Pagination.Page) (Some state.Pagination.Limit) state.Pagination.Where
             { state with
                   Pagination = { state.Pagination with Count = count }
                   Notes = notes
@@ -82,7 +83,7 @@ module QuickNotes =
                 { state.CurrentNote with
                       CreatedAt = DateTime.Now
                       Id = ObjectId.NewObjectId() }
-            create note |> ignore
+            QuickNoteHelpers.create note |> ignore
             state,
             Cmd.batch
                 [ Cmd.ofMsg FetchNotes
@@ -95,7 +96,7 @@ module QuickNotes =
               Count = 0
               Where = None }
 
-        let notes, count = find (Some pagination.Page) (Some pagination.Limit) pagination.Where
+        let notes, count = QuickNoteHelpers.find (Some pagination.Page) (Some pagination.Limit) pagination.Where
         { Pagination = { pagination with Count = count }
           Notes = notes
           CurrentNote = emptyNote
@@ -190,32 +191,6 @@ module QuickNotes =
                               (PaginationHelpers.canGoNext pagination.Page pagination.Limit pagination.Count)
                           MenuItem.header "Next" ] ] ]
 
-    let private notificationContent note dispatch =
-        let getContent =
-            let str = (sprintf "%s - %s" note.Title note.Content)
-
-            let getLength =
-                if str.Length <= 26 then (str.Length - 1) else 25
-
-            sprintf "%s..." (str.Substring(0, getLength))
-
-        let noteMsg = sprintf "Delete \"%s\"?" getContent
-
-        StackPanel.create
-            [ StackPanel.dock Dock.Top
-              StackPanel.verticalAlignment VerticalAlignment.Top
-              StackPanel.horizontalAlignment HorizontalAlignment.Center
-              StackPanel.spacing 8.0
-              StackPanel.margin 8.0
-              StackPanel.children
-                  [ TextBlock.create [ TextBlock.text noteMsg ]
-                    Button.create
-                        [ Button.onClick (fun _ -> dispatch (DeleteNote note))
-                          Button.content "Yes, Delete" ]
-                    Button.create
-                        [ Button.onClick (fun _ -> dispatch HideDelete)
-                          Button.content "Cancel" ] ] ]
-
     let view (state: State) dispatch =
         let isShowing, note = state.IsShowingDelete
         DockPanel.create
@@ -224,5 +199,6 @@ module QuickNotes =
               DockPanel.children
                   [ yield paginationMenu state.Pagination dispatch
                     yield quickNoteForm state.CurrentNote dispatch
-                    if isShowing then yield notificationContent note dispatch
+                    if isShowing then
+                        yield SharedViews.notificationContent note dispatch (DeleteNote note) HideDelete
                     yield notesList state.Notes dispatch ] ]
