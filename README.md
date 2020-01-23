@@ -1,5 +1,7 @@
 # AvaFunc
 
-# Wip...
+This is a sample Avalonia + Avalonia.FuncUI desktop application
 
-This is in the hopes to be a multi-page MVU Avalonia sample
+you can check some thoughts and a brief explanation at this [blog post](https://dev.to/tunaxor/desktop-apps-with-avalonia-and-fsharp-gb5-temp-slug-7351884)
+
+![AvaFunc Gif](./avafunc.gif)
